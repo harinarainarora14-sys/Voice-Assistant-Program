@@ -201,7 +201,7 @@ def ask(question: str = Query(..., min_length=1, max_length=500)):
 # Answer processing for predefined responses
 # ------------------------
 def process_predefined_answer(intent: str, question: str):
-    """Process predefined answers with special handling for time and dynamic content"""
+    """Process predefined answers with special handling for time and other dynamic content"""
     try:
         answer = responses[intent].get("answer", "Sorry, I don't understand that.")
 
@@ -210,26 +210,27 @@ def process_predefined_answer(intent: str, question: str):
             india_tz = ZoneInfo("Asia/Kolkata")
             now_india = datetime.now(india_tz)
             time_str = now_india.strftime("%I:%M %p")
+            date_str = now_india.strftime("%A, %B %d, %Y")
             return {
-                "answer": f"The current time in India is {time_str}",
+                "answer": f"The current time in India is {time_str} on {date_str}",
                 "type": "time_india",
                 "source": "predefined"
             }
 
-        # For any other special processing, you can add here
-        # For example, if you want to make some responses dynamic
-        
+        # Regular predefined response
         return {
             "answer": answer,
             "type": "predefined",
-            "intent": intent
+            "intent": intent,
+            "source": "predefined"
         }
         
     except Exception as e:
         logger.error(f"❌ Error processing predefined answer: {e}")
         return {
             "answer": "I encountered an issue processing that request.",
-            "type": "error"
+            "type": "error",
+            "source": "system"
         }
 
 # ------------------------
