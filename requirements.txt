@@ -2,10 +2,9 @@ fastapi==0.110.0
 uvicorn==0.29.0
 fuzzywuzzy==0.18.0
 requests==2.31.0
-pydantic==2.5.2     
+pydantic==2.5.2
 numpy==1.26.4
 vosk==0.3.45
 pyttsx3==2.90
-ujson==5.9.0          
+ujson==5.9.0
 google-generativeai==0.7.2
-
