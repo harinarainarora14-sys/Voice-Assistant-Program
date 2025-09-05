@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import ujson as json
+import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from fuzzywuzzy import fuzz
