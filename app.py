@@ -234,6 +234,35 @@ def process_predefined_answer(intent: str, question: str):
         }
 
 # ------------------------
+# Debug endpoint for troubleshooting
+# ------------------------
+@app.get("/debug-gemini")
+def debug_gemini():
+    """Debug endpoint to test Gemini AI integration"""
+    try:
+        # Test the Gemini API
+        test_question = "What is 2+2?"
+        test_response = query_gemini_ai(test_question)
+        
+        return {
+            "status": "debug_info",
+            "api_key_configured": bool(GEMINI_API_KEY),
+            "api_key_length": len(GEMINI_API_KEY) if GEMINI_API_KEY else 0,
+            "api_url": GEMINI_API_URL,
+            "test_question": test_question,
+            "test_response": test_response,
+            "responses_loaded": len(responses),
+            "sample_intents": list(responses.keys())[:5] if responses else [],
+            "fallback_message": "I'm sorry, I'm having trouble understanding that right now. Could you try asking in a different way?"
+        }
+    except Exception as e:
+        return {
+            "status": "debug_error",
+            "error": str(e),
+            "api_key_configured": bool(GEMINI_API_KEY)
+        }
+
+# ------------------------
 # Additional utility endpoints
 # ------------------------
 @app.get("/intents")
