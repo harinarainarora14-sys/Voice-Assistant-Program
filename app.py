@@ -166,19 +166,59 @@ def query_gemini_ai(question: str) -> Optional[str]:
             timeout=10
         )
         
+        logger.info(f"📊 Gemini API Status: {response.status_code}")
+        
         if response.status_code == 200:
             data = response.json()
-            if "candidates" in data and len(data["candidates"]) > 0:
-                content = data["candidates"][0]["content"]["parts"][0]["text"]
-                logger.info(f"✅ Gemini AI response received for: {question[:50]}...")
-                return content.strip()
+            logger.info(f"📦 Gemini Response Structure: {list(data.keys())}")
+            
+            # Check if response has candidates
+            if "candidates" not in data:
+                logger.error(f"❌ No 'candidates' in response: {data}")
+                return None
+            
+            if len(data["candidates"]) == 0:
+                logger.error(f"❌ Empty candidates array: {data}")
+                return None
+            
+            candidate = data["candidates"][0]
+            logger.info(f"📦 Candidate Structure: {list(candidate.keys())}")
+            
+            # Navigate through the response structure safely
+            if "content" not in candidate:
+                logger.error(f"❌ No 'content' in candidate: {candidate}")
+                return None
+            
+            content = candidate["content"]
+            logger.info(f"📦 Content Structure: {list(content.keys())}")
+            
+            if "parts" not in content:
+                logger.error(f"❌ No 'parts' in content: {content}")
+                return None
+            
+            if len(content["parts"]) == 0:
+                logger.error(f"❌ Empty parts array")
+                return None
+            
+            if "text" not in content["parts"][0]:
+                logger.error(f"❌ No 'text' in parts[0]: {content['parts'][0]}")
+                return None
+            
+            text = content["parts"][0]["text"]
+            logger.info(f"✅ Gemini AI response received: {text[:100]}...")
+            return text.strip()
         else:
             logger.error(f"❌ Gemini API error: {response.status_code} - {response.text}")
             
+    except KeyError as e:
+        logger.error(f"❌ KeyError accessing response structure: {e}")
+        logger.error(f"Full response data: {data if 'data' in locals() else 'No data'}")
     except requests.exceptions.RequestException as e:
         logger.error(f"❌ Network error querying Gemini AI: {e}")
     except Exception as e:
         logger.error(f"❌ Unexpected error querying Gemini AI: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
     
     return None
 
