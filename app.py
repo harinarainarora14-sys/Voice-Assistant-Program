@@ -76,13 +76,64 @@ def home():
         "endpoints": {
             "/ask": "Main chat endpoint",
             "/health": "Health check",
-            "/ping": "Simple ping test"
+            "/ping": "Simple ping test",
+            "/list-models": "List available Gemini models",
+            "/debug-gemini": "Debug Gemini integration"
         }
     }
 
 @app.get("/ping")
 def ping():
     return {"message": "pong", "timestamp": datetime.now().isoformat()}
+
+# ------------------------
+# List available models endpoint
+# ------------------------
+@app.get("/list-models")
+def list_models():
+    """List available Gemini models for your API key"""
+    try:
+        logger.info("🔍 Fetching available models...")
+        
+        response = requests.get(
+            f"https://generativelanguage.googleapis.com/v1beta/models?key={GEMINI_API_KEY}",
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            models = []
+            all_models = []
+            
+            for model in data.get('models', []):
+                model_name = model.get('name', '')
+                supported_methods = model.get('supportedGenerationMethods', [])
+                all_models.append({
+                    "name": model_name,
+                    "methods": supported_methods
+                })
+                
+                if 'generateContent' in supported_methods:
+                    models.append(model_name)
+            
+            logger.info(f"✅ Found {len(models)} models that support generateContent")
+            
+            return {
+                "available_for_generateContent": models,
+                "count": len(models),
+                "all_models": all_models,
+                "total_models": len(all_models),
+                "note": "Use the models listed in 'available_for_generateContent'"
+            }
+        else:
+            logger.error(f"❌ Error fetching models: {response.status_code}")
+            return {
+                "error": response.status_code,
+                "message": response.text
+            }
+    except Exception as e:
+        logger.error(f"❌ Exception while fetching models: {e}")
+        return {"error": str(e)}
 
 # ------------------------
 # Gemini AI Integration
